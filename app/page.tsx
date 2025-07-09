@@ -113,6 +113,8 @@ export default function WeatherApp() {
       const currentData = await currentResponse.json()
       const forecastData = await forecastResponse.json()
 
+
+
       if (currentData.error || forecastData.error) {
         throw new Error(currentData.error || forecastData.error)
       }
@@ -203,13 +205,13 @@ export default function WeatherApp() {
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-md border-b sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+          <div className="flex md:flex-row flex-col items-center justify-between">
+            <div className="flex items-center gap-2 mb-4">
               <Cloud className="h-8 w-8 text-blue-600" />
-              <h1 className="text-2xl font-bold text-gray-900">WeatherPro</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Outcast</h1>
             </div>
-            <div className="flex items-center gap-4">
-              <form onSubmit={handleSearch} className="relative">
+            <div className="flex items-center gap-2">
+              <form onSubmit={handleSearch} className="relative flex">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <input
                   type="text"
@@ -219,13 +221,15 @@ export default function WeatherApp() {
                   className="pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </form>
+              <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={handleCurrentLocation} disabled={geoLoading}>
                 <Navigation className="h-4 w-4 mr-2" />
-                {geoLoading ? "Locating..." : "Current Location"}
+                <span className="hidden md:inline"> {geoLoading ? "Locating..." : "Current Location"}</span>
               </Button>
               <Button variant="outline" size="sm" onClick={handleRefresh}>
                 <RefreshCw className="h-4 w-4" />
               </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -242,7 +246,7 @@ export default function WeatherApp() {
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:grid-cols-3">
             <TabsTrigger value="current" className="flex items-center gap-2">
               <Thermometer className="h-4 w-4" />
               <span className="hidden sm:inline">Current</span>
@@ -254,10 +258,6 @@ export default function WeatherApp() {
             <TabsTrigger value="weekly" className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               <span className="hidden sm:inline">7-Day</span>
-            </TabsTrigger>
-            <TabsTrigger value="map" className="flex items-center gap-2">
-              <Map className="h-4 w-4" />
-              <span className="hidden sm:inline">Map</span>
             </TabsTrigger>
           </TabsList>
 
@@ -326,7 +326,7 @@ export default function WeatherApp() {
                         <Wind className="h-5 w-5 text-green-500" />
                         <span className="font-medium">Wind Speed</span>
                       </div>
-                      <span className="text-2xl font-bold">{currentWeather.windSpeed} mph</span>
+                      <span className="text-2xl font-bold">{currentWeather.windSpeed} km/h</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -338,7 +338,7 @@ export default function WeatherApp() {
                         <Eye className="h-5 w-5 text-purple-500" />
                         <span className="font-medium">Visibility</span>
                       </div>
-                      <span className="text-2xl font-bold">{currentWeather.visibility} mi</span>
+                      <span className="text-2xl font-bold">{currentWeather.visibility} km</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -350,20 +350,14 @@ export default function WeatherApp() {
                         <Thermometer className="h-5 w-5 text-orange-500" />
                         <span className="font-medium">Pressure</span>
                       </div>
-                      <span className="text-2xl font-bold">{currentWeather.pressure} inHg</span>
+                      <span className="text-2xl font-bold">{currentWeather.pressure} hPa</span>
                     </div>
                   </CardContent>
                 </Card>
               </div>
             </div>
 
-            {/* AI-Powered Activity Recommendations */}
-            <AIActivityRecommendations
-              weather={currentWeather}
-              location={currentWeather.location}
-              userPreferences={userPreferences}
-              onPreferencesClick={() => setShowPreferences(true)}
-            />
+
           </TabsContent>
 
           {/* Hourly Forecast Tab */}
@@ -433,47 +427,18 @@ export default function WeatherApp() {
             </Card>
           </TabsContent>
 
-          {/* Map Tab */}
-          <TabsContent value="map">
-            <Card>
-              <CardHeader>
-                <CardTitle>Weather Map</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="relative h-96 bg-gradient-to-br from-blue-100 to-green-100 rounded-lg overflow-hidden">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <Map className="h-16 w-16 mx-auto mb-4 text-blue-500" />
-                      <h3 className="text-xl font-semibold mb-2">Interactive Weather Map</h3>
-                      <p className="text-gray-600 max-w-md">
-                        Weather map integration would display real-time weather patterns, precipitation, and temperature
-                        data for {currentWeather.location} and surrounding areas.
-                      </p>
-                    </div>
-                  </div>
-                </div>
 
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <Button variant="outline" size="sm">
-                    Temperature
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    Precipitation
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    Wind
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    Pressure
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    Satellite
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
         </Tabs>
+
+        <div className="mt-4">
+        {/* AI-Powered Activity Recommendations */}
+        <AIActivityRecommendations
+          weather={currentWeather}
+          location={currentWeather.location}
+            userPreferences={userPreferences}
+            onPreferencesClick={() => setShowPreferences(true)}
+          />
+        </div>
       </div>
       <UserPreferences
         preferences={userPreferences}

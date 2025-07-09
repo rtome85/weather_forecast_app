@@ -31,15 +31,6 @@ A modern, responsive weather application built with Next.js that provides real-t
 
 ## Setup
 
-### Environment Variables
-
-Create a `.env.local` file in the root directory and add your API keys:
-
-\`\`\`
-OPENWEATHER_API_KEY=your_openweather_api_key_here
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
-\`\`\`
-
 ### Getting API Keys
 
 #### OpenWeatherMap API Key
