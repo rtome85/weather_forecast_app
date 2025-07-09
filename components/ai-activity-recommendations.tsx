@@ -69,11 +69,6 @@ export function AIActivityRecommendations({
     setError(null)
 
     try {
-      // Fetch local events first
-      const eventsResponse = await fetch(`/api/events?city=${encodeURIComponent(location)}`)
-      const eventsData = await eventsResponse.json()
-      setEvents(eventsData.events || [])
-
       // Generate AI recommendations using Anthropic
       const recommendationsResponse = await fetch("/api/recommendations", {
         method: "POST",
@@ -83,20 +78,20 @@ export function AIActivityRecommendations({
         body: JSON.stringify({
           weather,
           location,
-          events: eventsData.events || [],
+          events: [],
           userPreferences,
         }),
       })
 
       if (!recommendationsResponse.ok) {
-        throw new Error("Failed to fetch recommendations from Anthropic AI")
+        throw new Error("Failed to fetch recommendations")
       }
 
       const recommendationsData = await recommendationsResponse.json()
       setRecommendations(recommendationsData)
       setLastUpdated(new Date())
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch AI recommendations")
+      setError(err instanceof Error ? err.message : "Failed to fetch recommendations")
     } finally {
       setLoading(false)
     }
@@ -137,6 +132,40 @@ export function AIActivityRecommendations({
     return "text-red-600"
   }
 
+  const handleExplore = (recommendation: AIRecommendation) => {
+    // Generate exploration URL based on category and location
+    const encodedLocation = encodeURIComponent(location)
+    const encodedTitle = encodeURIComponent(recommendation.title)
+    
+    let exploreUrl = ""
+    
+    switch (recommendation.category) {
+      case "Outdoor Adventure":
+        exploreUrl = `https://www.google.com/search?q=${encodedTitle}+${encodedLocation}+outdoor+activities`
+        break
+      case "Indoor Activity":
+        exploreUrl = `https://www.google.com/search?q=${encodedTitle}+${encodedLocation}+indoor+activities`
+        break
+      case "Cultural Event":
+        exploreUrl = `https://www.google.com/search?q=${encodedTitle}+${encodedLocation}+events+culture`
+        break
+      case "Food & Dining":
+        exploreUrl = `https://www.google.com/search?q=${encodedTitle}+${encodedLocation}+restaurants+dining`
+        break
+      case "Wellness":
+        exploreUrl = `https://www.google.com/search?q=${encodedTitle}+${encodedLocation}+wellness+spa`
+        break
+      case "Entertainment":
+        exploreUrl = `https://www.google.com/search?q=${encodedTitle}+${encodedLocation}+entertainment`
+        break
+      default:
+        exploreUrl = `https://www.google.com/search?q=${encodedTitle}+${encodedLocation}`
+    }
+    
+    // Open in new tab
+    window.open(exploreUrl, '_blank', 'noopener,noreferrer')
+  }
+
   if (loading) {
     return (
       <Card className="bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200">
@@ -144,18 +173,13 @@ export function AIActivityRecommendations({
           <div className="flex items-center justify-center">
             <div className="relative">
               <Loader2 className="h-8 w-8 animate-spin text-purple-600 mr-3" />
-              <Brain className="absolute -top-1 -right-1 h-4 w-4 text-indigo-600" />
             </div>
             <div>
-              <h3 className="font-semibold text-purple-800">Anthropic AI Analyzing...</h3>
+              <h3 className="font-semibold text-purple-800">Searching for activities...</h3>
               <p className="text-sm text-purple-600">
-                Claude is processing weather data, local events, and your preferences
+                We are searching for activities that match your preferences and weather conditions
               </p>
             </div>
-          </div>
-          <div className="mt-4 flex items-center justify-center gap-2 text-xs text-purple-500">
-            <Zap className="h-3 w-3" />
-            <span>Powered by Anthropic Claude</span>
           </div>
         </CardContent>
       </Card>
@@ -179,7 +203,7 @@ export function AIActivityRecommendations({
                 className="border-red-300 bg-transparent"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
-                Retry with Claude
+                Retry
               </Button>
             </AlertDescription>
           </Alert>
@@ -197,10 +221,9 @@ export function AIActivityRecommendations({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <div className="flex items-center gap-2">
-              <Brain className="h-5 w-5 text-purple-600" />
               <Sparkles className="h-5 w-5 text-indigo-600" />
               <span className="bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                Claude AI Recommendations
+                Things to do in {location}
               </span>
             </div>
             <Button variant="outline" size="sm" onClick={onPreferencesClick} className="ml-auto bg-white/50">
@@ -215,33 +238,6 @@ export function AIActivityRecommendations({
             </p>
           )}
         </CardHeader>
-        {/* <CardContent>
-          <div className="space-y-4">
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="bg-white/60 p-3 rounded-lg border border-purple-100">
-                <h4 className="font-semibold text-purple-800 mb-1 flex items-center gap-1">
-                  <Target className="h-4 w-4" />
-                  Weather Analysis
-                </h4>
-                <p className="text-sm text-gray-700">{recommendations.weatherSummary}</p>
-              </div>
-              <div className="bg-white/60 p-3 rounded-lg border border-indigo-100">
-                <h4 className="font-semibold text-indigo-800 mb-1 flex items-center gap-1">
-                  <MapPin className="h-4 w-4" />
-                  Location Insights
-                </h4>
-                <p className="text-sm text-gray-700">{recommendations.locationInsights}</p>
-              </div>
-              <div className="bg-white/60 p-3 rounded-lg border border-blue-100">
-                <h4 className="font-semibold text-blue-800 mb-1 flex items-center gap-1">
-                  <Sparkles className="h-4 w-4" />
-                  Strategy
-                </h4>
-                <p className="text-sm text-gray-700">{recommendations.overallRecommendation}</p>
-              </div>
-            </div>
-          </div>
-        </CardContent> */}
       </Card>
 
       {/* Enhanced Recommendations Grid */}
@@ -322,6 +318,7 @@ export function AIActivityRecommendations({
                 <Button
                   size="sm"
                   className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+                  onClick={() => handleExplore(rec)}
                 >
                   <ExternalLink className="h-3 w-3 mr-2" />
                   Explore
@@ -398,7 +395,7 @@ export function AIActivityRecommendations({
           className="border-purple-200 hover:bg-purple-50 bg-transparent"
         >
           <RefreshCw className="h-4 w-4 mr-2" />
-          Get Fresh Claude Recommendations
+          Get Fresh Recommendations
         </Button>
       </div>
 
