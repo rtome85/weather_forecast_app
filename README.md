@@ -105,4 +105,3 @@ The application uses Anthropic's Claude 3.5 Sonnet model for:
 - **Caching**: Intelligent caching to reduce API calls and improve performance
 \`\`\`
 
-Let's also create a configuration file to manage the Anthropic integration:
